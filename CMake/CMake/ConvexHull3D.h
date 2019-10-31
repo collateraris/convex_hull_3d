@@ -39,6 +39,9 @@ namespace convex_hull
 	int8_t VolumeSign(tFace<T>* f, tVertex<T>* p);
 
 	template <typename T>
+	tVertex<T>* MakeNullVertex(std::list<tVertex<T>>& vertices);
+
+	template <typename T>
 	struct tVertex
 	{
 		std::vector<T> v = { 0.f, 0.f, 0.f };
@@ -142,7 +145,7 @@ namespace convex_hull
 	{
 		tEdge<T> e;
 		edges.push_back(e);
-		return edges.back();
+		return &edges.back();
 	}
 
 	template <typename T>
@@ -150,7 +153,25 @@ namespace convex_hull
 	{
 		tFace<T> f;
 		faces.push_back(f);
-		return faces.back();
+		return &faces.back();
+	}
+
+	template <typename T>
+	tVertex<T>* MakeNullVertex(std::list<tVertex<T>>& vertices)
+	{
+		tVertex<T> v;
+		if (vertices.empty())
+		{
+			vertices.push_back(v);
+			vertices.back().next = vertices.back().prev = &vertices.back();
+		}
+		else
+		{
+			tVertex<T>& old_back = vertices.back();
+			vertices.push_back(v);
+			old_back.next = &vertices.back();
+		}
+		return &vertices.back();
 	}
 
 	template <typename T>
