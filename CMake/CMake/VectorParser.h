@@ -1,7 +1,5 @@
 #pragma once
 
-#pragma once
-
 #ifndef  __VECTOR_PARSER__
 #define __VECTOR_PARSER__
 #include <sstream>

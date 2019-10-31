@@ -5,6 +5,7 @@
 
 #include "CMake.h"
 #include "VectorParser.h"
+#include "ConvexHull3D.h"
 
 using namespace std;
 
