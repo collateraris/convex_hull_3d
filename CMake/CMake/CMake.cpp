@@ -10,7 +10,7 @@
 
 using namespace std;
 
-void convertVectorToverticesList(std::vector<std::vector<float>>& vectorBase, std::list<convex_hull::tVertex<float>>& vertices);
+void convertVectorToVerticesList(std::vector<std::vector<float>>& vectorBase, std::list<convex_hull::tVertex<float>>& vertices);
 
 int main()
 {
@@ -22,14 +22,14 @@ int main()
 	std::list<convex_hull::tFace<float>> faces;
 	
 	vectorBase.pop_back();
-	convertVectorToverticesList(vectorBase, vertices);
+	convertVectorToVerticesList(vectorBase, vertices);
 	convex_hull::DoubleTriangle<float>(vertices, faces, edges);
 	cout << "Hello CMake." << endl;
 	system("pause");
 	return 0;
 }
 
-void convertVectorToverticesList(std::vector<std::vector<float>>& vectorBase, std::list<convex_hull::tVertex<float>>& vertices)
+void convertVectorToVerticesList(std::vector<std::vector<float>>& vectorBase, std::list<convex_hull::tVertex<float>>& vertices)
 {
 	int num = 0;
 	for (std::vector<float>& vertex: vectorBase)

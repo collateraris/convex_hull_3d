@@ -7,9 +7,9 @@
 
 namespace convex_hull
 {
-#define X   0
-#define Y   1
-#define Z   2
+	#define X   0
+	#define Y   1
+	#define Z   2
 
 	template <typename T>
 	struct tVertex;
@@ -88,7 +88,7 @@ namespace convex_hull
 		tEdge<T> e0, e1, e2, s;
 		int8_t vol;
 
-		for (tVertex<T>& ver : vertices)
+		for (tVertex<T>& ver: vertices)
 		{
 			if (ver.next != nullptr && ver.next->next != nullptr)
 			{
@@ -123,7 +123,7 @@ namespace convex_hull
 		f1->edge[2]->adjface[1] = f0;
 
 		v3 = v2->next;
-		vol = VolumeSign<T>(f0, v3);
+		vol = VolumeSign<T>( f0, v3);
 
 		while (vol < 1)
 		{
@@ -225,7 +225,7 @@ namespace convex_hull
 
 		f = MakeNullFace(faces);
 
-		f->edge[0] = e0;
+		f->edge[0] = e0; 
 		f->edge[1] = e1;
 		f->edge[2] = e2;
 
@@ -268,53 +268,13 @@ namespace convex_hull
 	template <typename T>
 	void ConstructHull(std::list<tVertex<T>>& vertices, std::list<tFace<T>>& faces, std::list<tEdge<T>>& edges)
 	{
-		for (tVertex<T>& v : vertices)
-		{
-			if (!v.mark)
-			{
-				v.mark = true;
-				AddOne(v, vertices, faces, edges);
 
-			}
-		}
 	}
 
 	template<typename T>
 	bool AddOne(tVertex<T>&v, std::list<tVertex<T>>& vertices, std::list<tFace<T>>& faces, std::list<tEdge<T>>& edges)
 	{
-		bool visible = false;
-		int8_t volSign = 0;
-
-		for (tFace<T>& f : faces)
-		{
-			volSign = VolumeSign<T>(&f, &v);
-			if (volSign < 0)
-			{
-				f.visible = true;
-				visible = true;
-			}
-		}
-
-		if (!visible)
-		{
-			return false;
-		}
-
-		tEdge<T>* edge_tmp;
-		for (tEdge<T>& e : edges)
-		{
-			edge_tmp = e.next;
-			if (e.adjface[0]->visible && e.adjface[1]->visible)
-			{
-				e.deleted = true;
-			}
-			else if (e.adjface[0]->visible || e.adjface[1]->visible)
-			{
-
-			}
-		}
-
-		return true;
+		return false;
 	}
 }
 
