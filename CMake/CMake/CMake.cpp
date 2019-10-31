@@ -24,6 +24,7 @@ int main()
 	vectorBase.pop_back();
 	convertVectorToVerticesList(vectorBase, vertices);
 	convex_hull::DoubleTriangle<float>(vertices, faces, edges);
+	convex_hull::ConstructHull<float>(vertices, faces, edges);
 	cout << "Hello CMake." << endl;
 	system("pause");
 	return 0;

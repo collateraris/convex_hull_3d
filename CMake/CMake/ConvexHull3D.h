@@ -58,7 +58,7 @@ namespace convex_hull
 	{
 		std::vector<T> v = { 0.f, 0.f, 0.f };
 		int vnum = 0;
-		tEdge<T> duplicate;
+		tEdge<T>* duplicate  = nullptr;
 		bool onhull = false;
 		bool mark = false;
 		tVertex<T> *next = nullptr;
@@ -326,22 +326,60 @@ namespace convex_hull
 	{
 		std::vector<tEdge<T>*> newEdges = {nullptr, nullptr};
 		tFace<T>* newFace = nullptr;
-		for (tEdge<T>* edge: newEdges)
+		for(std::size_t i = 0; i < newEdges.size(); ++i)
 		{
 			if (e.endpts[i]->duplicate == nullptr)
 			{
-				edge = MakeNullEdge(edges);
-				edge->endpts[0] = e.endpts[i];
-				edge->endpts[1] = v;
-				e.endpts[i]->duplicate = edge;
+				newEdges[i] = MakeNullEdge(edges);
+				newEdges[i]->endpts[0] = e.endpts[i];
+				newEdges[i]->endpts[1] = &v;
+				e.endpts[i]->duplicate = newEdges[i];
 			}
 		}
+
+		newFace = MakeNullFace<T>(faces);
+		newFace->edge[0] = &e;
+		newFace->edge[1] = newEdges[0];
+		newFace->edge[2] = newEdges[1];
+		MakeCcw<T>(*newFace, e, v);
+
+		for (std::size_t i = 0; i < 2; ++i)
+		{
+			for (std::size_t j = 0; j < 2; ++j)
+			{
+				if (newEdges[i]->adjface[j] == nullptr)
+				{
+					newEdges[i]->adjface[j] = newFace;
+					break;
+				}
+			}
+		}
+		return newFace;
 	}
 
 	template <typename T>
 	void MakeCcw(tFace<T>& f, tEdge<T>& e, tVertex<T>& v)
 	{
+		tFace<T> *fv = nullptr;
 
+		fv = e.adjface[0]->visible ? e.adjface[0] : e.adjface[1];
+
+		std::size_t i = 0;
+		for ( ; fv->vertex[i] != e.endpts[0]; ++i);
+
+		if (fv->vertex[ (i+1)%3] != e.endpts[1])
+		{
+			f.vertex[0] = e.endpts[1];
+			f.vertex[1] = e.endpts[0];
+		}
+		else
+		{
+			f.vertex[0] = e.endpts[0];
+			f.vertex[1] = e.endpts[1];
+			std::swap(f.edge[1], f.edge[2]);
+		}
+
+		f.vertex[2] = &v;
 	}
 }
 
