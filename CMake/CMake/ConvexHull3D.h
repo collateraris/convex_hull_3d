@@ -33,6 +33,12 @@ namespace convex_hull
 	bool AddOne(tVertex<T>&v, std::list<tVertex<T>>& vertices, std::list<tFace<T>>& faces, std::list<tEdge<T>>& edges);
 
 	template <typename T>
+	tFace<T>* MakeConeFace(tEdge<T>& e, tVertex<T>& v, std::list<tFace<T>>& faces, std::list<tEdge<T>>& edges);
+
+	template <typename T>
+	void MakeCcw(tFace<T>& f, tEdge<T>& e, tVertex<T>& v);
+
+	template <typename T>
 	tFace<T>* MakeFace(tVertex<T>& v0, tVertex<T>& v1, tVertex<T>& v2, tFace<T>* fold, std::list<tFace<T>>& faces, std::list<tEdge<T>>& edges);
 
 	template <typename T>
@@ -300,21 +306,42 @@ namespace convex_hull
 			return false;
 		}
 
-		tEdge<T>* edge_tmp;
 		for (tEdge<T>& e : edges)
 		{
-			edge_tmp = e.next;
 			if (e.adjface[0]->visible && e.adjface[1]->visible)
 			{
 				e.deleted = true;
 			}
 			else if (e.adjface[0]->visible || e.adjface[1]->visible)
 			{
-
+				e.newface = MakeConeFace(e, v, faces, edges);
 			}
 		}
 
 		return true;
+	}
+
+	template <typename T>
+	tFace<T>* MakeConeFace(tEdge<T>& e, tVertex<T>& v, std::list<tFace<T>>& faces, std::list<tEdge<T>>& edges)
+	{
+		std::vector<tEdge<T>*> newEdges = {nullptr, nullptr};
+		tFace<T>* newFace = nullptr;
+		for (tEdge<T>* edge: newEdges)
+		{
+			if (e.endpts[i]->duplicate == nullptr)
+			{
+				edge = MakeNullEdge(edges);
+				edge->endpts[0] = e.endpts[i];
+				edge->endpts[1] = v;
+				e.endpts[i]->duplicate = edge;
+			}
+		}
+	}
+
+	template <typename T>
+	void MakeCcw(tFace<T>& f, tEdge<T>& e, tVertex<T>& v)
+	{
+
 	}
 }
 
