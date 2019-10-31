@@ -24,7 +24,7 @@ namespace convex_hull
 	void DoubleTriangle(std::list<tVertex<T>>& vertices, std::list<tFace<T>>& faces, std::list<tEdge<T>>& edges);
 
 	template <typename T>
-	bool Collinear(std::vector<T>& va, std::vector<T>& vb, std::vector<T>& vc);
+	bool Collinear(std::vector<T>& a, std::vector<T>& b, std::vector<T>& c);
 
 	template <typename T>
 	tFace<T>* MakeFace(tVertex<T>& v0, tVertex<T>& v1, tVertex<T>& v2, tFace<T>* fold, std::list<tFace<T>>& faces, std::list<tEdge<T>>& edges);
@@ -77,24 +77,24 @@ namespace convex_hull
 	template <typename T>
 	void DoubleTriangle(std::list<tVertex<T>>& vertices, std::list<tFace<T>>& faces, std::list<tEdge<T>>& edges)
 	{
-		tVertex<T>* v0, v1, v2, v3, t;
-		tFace<T>* f0, f1;
+		tVertex<T> *v0 = nullptr, *v1 = nullptr, *v2 = nullptr, *v3 = nullptr, *t = nullptr;
+		tFace<T> *f0 = nullptr, *f1 = nullptr;
 		tEdge<T> e0, e1, e2, s;
 		int8_t vol;
 
-		for (tVertex<T> v: vertices)
+		for (tVertex<T>& ver: vertices)
 		{
-			if (v.next != nullptr && v.next->next != nullptr)
+			if (ver.next != nullptr && ver.next->next != nullptr)
 			{
-				if (!Collinear(v.v, v.next->v, v.next->next.v))
+				if (!Collinear<T>(ver.v, ver.next->v, ver.next->next->v))
 				{
-					v0 = v;
+					v0 = &ver;
 					break;
 				}
 			}
 		}
 
-		if (v0.next != nullptr || v0.next->next != nullptr)
+		if (v0->next == nullptr || v0->next->next == nullptr)
 		{
 			return;
 		}
@@ -106,8 +106,8 @@ namespace convex_hull
 		v1->mark = true;
 		v2->mark = true;
 
-		f0 = MakeFace<T>(v0, v1, v2, f1, faces, edges);
-		f1 = MakeFace<T>(v2, v1, v0, f0, faces, edges);
+		f0 = MakeFace<T>(*v0, *v1, *v2, f1, faces, edges);
+		f1 = MakeFace<T>(*v2, *v1, *v0, f0, faces, edges);
 
 		f0->edge[0]->adjface[1] = f1;
 		f0->edge[1]->adjface[1] = f1;
@@ -125,26 +125,36 @@ namespace convex_hull
 			vol = VolumeSign<T>(f0, v3);
 		}
 
-		vertices.front() = v3;
+		vertices.front() = *v3;
 	}
 
 	template <typename T>
-	bool Collinear(std::vector<T>& va, std::vector<T>& vb, std::vector<T>& vc)
+	bool Collinear(std::vector<T>& a, std::vector<T>& b, std::vector<T>& c)
 	{
 		return
-			(c->v[Z] - a->v[Z]) * (b->v[Y] - a->v[Y]) -
-			(b->v[Z] - a->v[Z]) * (c->v[Y] - a->v[Y]) == 0
-			&& (b->v[Z] - a->v[Z]) * (c->v[X] - a->v[X]) -
-			(b->v[X] - a->v[X]) * (c->v[Z] - a->v[Z]) == 0
-			&& (b->v[X] - a->v[X]) * (c->v[Y] - a->v[Y]) -
-			(b->v[Y] - a->v[Y]) * (c->v[X] - a->v[X]) == 0;
+			static_cast<int>((c[Z] - a[Z]) * (b[Y] - a[Y]) -
+			(b[Z] - a[Z]) * (c[Y] - a[Y])) == 0
+			&& static_cast<int>((b[Z] - a[Z]) * (c[X] - a[X]) -
+			(b[X] - a[X]) * (c[Z] - a[Z])) == 0
+			&& static_cast<int>((b[X] - a[X]) * (c[Y] - a[Y]) -
+			(b[Y] - a[Y]) * (c[X] - a[X])) == 0;
 	}
 
 	template <typename T>
 	tEdge<T>* MakeNullEdge(std::list<tEdge<T>>& edges)
 	{
 		tEdge<T> e;
-		edges.push_back(e);
+		if (edges.empty())
+		{
+			edges.push_back(e);
+			edges.back().next = edges.back().prev = &edges.back();
+		}
+		else
+		{
+			tEdge<T>& old_back = edges.back();
+			edges.push_back(e);
+			old_back.next = &edges.back();
+		}
 		return &edges.back();
 	}
 
@@ -152,7 +162,17 @@ namespace convex_hull
 	tFace<T>* MakeNullFace(std::list<tFace<T>>& faces)
 	{
 		tFace<T> f;
-		faces.push_back(f);
+		if (faces.empty())
+		{
+			faces.push_back(f);
+			faces.back().next = faces.back().prev = &faces.back();
+		}
+		else
+		{
+			tFace<T>& old_back = faces.back();
+			faces.push_back(f);
+			old_back.next = &faces.back();
+		}
 		return &faces.back();
 	}
 
@@ -178,7 +198,7 @@ namespace convex_hull
 	tFace<T>* MakeFace(tVertex<T>& v0, tVertex<T>& v1, tVertex<T>& v2, tFace<T>* fold, std::list<tFace<T>>& faces, std::list<tEdge<T>>& edges)
 	{
 		tFace<T>* f;
-		tEdge<T>* e0, e1, e2;
+		tEdge<T> *e0, *e1, *e2;
 
 		if (fold == nullptr)
 		{
@@ -203,11 +223,11 @@ namespace convex_hull
 		f->edge[1] = e1;
 		f->edge[2] = e2;
 
-		f->vertex[0] = v0;
-		f->vertex[1] = v1;
-		f->vertex[2] = v2;
+		f->vertex[0] = &v0;
+		f->vertex[1] = &v1;
+		f->vertex[2] = &v2;
 
-		e0->adjface[0] = e1->adjface[0] = e->adjface[0] = f;
+		e0->adjface[0] = e1->adjface[0] = e2->adjface[0] = f;
 
 		return f;
 	}
