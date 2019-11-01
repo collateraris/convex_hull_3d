@@ -29,6 +29,18 @@ namespace convex_hull
 	template <typename T>
 	void ConstructHull(std::list<tVertex<T>>& vertices, std::list<tFace<T>>& faces, std::list<tEdge<T>>& edges);
 
+	template <typename T>
+	void CleanUp(tVertex<T> &vNext, std::list<tVertex<T>>& vertices, std::list<tFace<T>>& faces, std::list<tEdge<T>>& edges);
+
+	template <typename T>
+	void CleanEdges(std::list<tEdge<T>>& edges);
+
+	template <typename T>
+	void CleanFaces(std::list<tFace<T>>& faces);
+
+	template <typename T>
+	void CleanVertices(tVertex<T> &vNext, std::list<tVertex<T>>& vertices);
+
 	template<typename T>
 	bool AddOne(tVertex<T>&v, std::list<tVertex<T>>& vertices, std::list<tFace<T>>& faces, std::list<tEdge<T>>& edges);
 
@@ -279,8 +291,8 @@ namespace convex_hull
 			if (!v.mark)
 			{
 				v.mark = true;
-				AddOne(v, vertices, faces, edges);
-
+				AddOne<T>(v, vertices, faces, edges);
+				CleanUp<T>(*v.next, vertices, faces, edges);
 			}
 		}
 	}
@@ -314,7 +326,7 @@ namespace convex_hull
 			}
 			else if (e.adjface[0]->visible || e.adjface[1]->visible)
 			{
-				e.newface = MakeConeFace(e, v, faces, edges);
+				e.newface = MakeConeFace<T>(e, v, faces, edges);
 			}
 		}
 
@@ -380,6 +392,32 @@ namespace convex_hull
 		}
 
 		f.vertex[2] = &v;
+	}
+
+	template <typename T>
+	void CleanUp(tVertex<T> &vNext, std::list<tVertex<T>>& vertices, std::list<tFace<T>>& faces, std::list<tEdge<T>>& edges)
+	{
+		CleanEdges<T>(edges);
+		CleanFaces<T>(faces);
+		CleanVertices<T>(vNext, vertices);
+	}
+
+	template <typename T>
+	void CleanEdges(std::list<tEdge<T>>& edges)
+	{
+
+	}
+
+	template <typename T>
+	void CleanFaces(std::list<tFace<T>>& faces)
+	{
+
+	}
+
+	template <typename T>
+	void CleanVertices(tVertex<T> &vNext, std::list<tVertex<T>>& vertices)
+	{
+
 	}
 }
 
