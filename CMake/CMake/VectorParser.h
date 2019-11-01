@@ -17,8 +17,8 @@ namespace parser {
 
 
 	template<typename T>
-	void make_vector_from_text(std::string path, std::vector<std::vector<T>>& output, int no_read_col, int no_read_row, short int anshii_separator) {
-
+	void make_vector_from_text(std::string path, std::vector<std::vector<T>>& output, int no_read_col, int no_read_row, short int anshii_separator) 
+	{
 		std::string str;
 		int  eqv;
 		float point = 1.;

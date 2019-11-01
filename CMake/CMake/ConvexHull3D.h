@@ -4,6 +4,7 @@
 #define __CONVEX_HULL__
 #include <vector>
 #include <list>
+#include <iterator>
 
 namespace convex_hull
 {
@@ -39,7 +40,7 @@ namespace convex_hull
 	void CleanFaces(std::list<tFace<T>>& faces);
 
 	template <typename T>
-	void CleanVertices(tVertex<T> &vNext, std::list<tVertex<T>>& vertices);
+	void CleanVertices(tVertex<T> &vNext, std::list<tVertex<T>>& vertices, std::list<tEdge<T>>& edges);
 
 	template<typename T>
 	bool AddOne(tVertex<T>&v, std::list<tVertex<T>>& vertices, std::list<tFace<T>>& faces, std::list<tEdge<T>>& edges);
@@ -73,6 +74,7 @@ namespace convex_hull
 		tEdge<T>* duplicate  = nullptr;
 		bool onhull = false;
 		bool mark = false;
+		bool deleted = false;
 		tVertex<T> *next = nullptr;
 		tVertex<T> *prev = nullptr;
 	};
@@ -96,6 +98,7 @@ namespace convex_hull
 		bool visible = false;
 		tFace *next = nullptr;
 		tFace *prev = nullptr;
+		bool deleted = false;
 	};
 
 	template <typename T>
@@ -105,26 +108,19 @@ namespace convex_hull
 		tFace<T> *f0 = nullptr, *f1 = nullptr;
 		tEdge<T> e0, e1, e2, s;
 		int8_t vol;
-
-		for (tVertex<T>& ver : vertices)
+		std::list<tVertex<T>>::iterator it = vertices.begin();
+		for( ; it != vertices.end(); )
 		{
-			if (ver.next != nullptr && ver.next->next != nullptr)
+			if (!Collinear<T>(*it->v, *(++it)->v, *(++it)->v))
 			{
-				if (!Collinear<T>(ver.v, ver.next->v, ver.next->next->v))
-				{
-					v0 = &ver;
-					break;
-				}
+				*v0 = *it;
+				break;
 			}
+			--it;
 		}
 
-		if (v0->next == nullptr || v0->next->next == nullptr)
-		{
-			return;
-		}
-
-		v1 = v0->next;
-		v2 = v1->next;
+		*v1 = *(++it);
+		*v2 = *(++it);
 
 		v0->mark = true;
 		v1->mark = true;
@@ -286,13 +282,13 @@ namespace convex_hull
 	template <typename T>
 	void ConstructHull(std::list<tVertex<T>>& vertices, std::list<tFace<T>>& faces, std::list<tEdge<T>>& edges)
 	{
-		for (tVertex<T>& v : vertices)
+		for( std::list<tVertex<T>>::iterator it = vertices.begin(); it != vertices.end(); )
 		{
-			if (!v.mark)
+			if (!*it->mark)
 			{
-				v.mark = true;
-				AddOne<T>(v, vertices, faces, edges);
-				CleanUp<T>(*v.next, vertices, faces, edges);
+				*it->mark = true;
+				AddOne<T>(*it, vertices, faces, edges);
+				CleanUp<T>(*(++it), vertices, faces, edges);
 			}
 		}
 	}
@@ -405,18 +401,69 @@ namespace convex_hull
 	template <typename T>
 	void CleanEdges(std::list<tEdge<T>>& edges)
 	{
+		for (tEdge<T>& e: edges)
+		{
+			if (e.newface != nullptr)
+			{
+				if ( e.adjface[0]->visible)
+				{
+					e.adjface[0] = e.newface;
+				}
+				else
+				{
+					e.adjface[1] = e.newface;
+					e.newface = nullptr;
+				}
+			}
+		}
 
+		for (std::list<tEdge<T>>::iterator it = edges.begin(); it!= edges.end(); ++it)
+		{
+			if (*it->deleted)
+			{
+				edges.erase(it);
+			}
+		}
 	}
 
 	template <typename T>
 	void CleanFaces(std::list<tFace<T>>& faces)
 	{
-
+		for (std::list<tFace<T>>::iterator it = faces.begin(); it != faces.end(); ++it)
+		{
+			if (*it->visible)
+			{
+				faces.erase(it);
+			}
+		}
 	}
 
 	template <typename T>
-	void CleanVertices(tVertex<T> &vNext, std::list<tVertex<T>>& vertices)
+	void CleanVertices(tVertex<T> &vNext, std::list<tVertex<T>>& vertices, std::list<tEdge<T>>& edges)
 	{
+		for (tEdge<T>& e: edges)
+		{
+			e.endpts[0]->onhull = e.endpts[1]->onhull = true;
+		}
+
+		for (std::list<tVertex<T>>::iterator it = vertices.begin(); it != vertices.end(); ++it)
+		{
+			if (*it->mark && !*it->onhull)
+			{
+				if (*it == vNext)
+				{
+					*vNext = *(++it);
+					--it;
+				}
+				vertices.erase(it);
+			}
+		}
+
+		for (tVertex<T>& v: vertices)
+		{
+			v.duplicate = nullptr;
+			v.onhull = false;
+		}
 
 	}
 }
