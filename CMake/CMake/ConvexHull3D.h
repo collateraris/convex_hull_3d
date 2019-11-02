@@ -111,16 +111,27 @@ namespace convex_hull
 		std::list<tVertex<T>>::iterator it = vertices.begin();
 		for( ; it != vertices.end(); )
 		{
-			if (!Collinear<T>(*it->v, *(++it)->v, *(++it)->v))
+			std::vector<T>& a = (*it).v;
+			if (++it == vertices.end())
 			{
-				*v0 = *it;
 				break;
 			}
-			--it;
+			std::vector<T>& b = (*it).v;
+			if (++it == vertices.end())
+			{
+				break;
+			}
+			std::vector<T>& c = (*it).v;
+			--it; --it;
+			if (!Collinear<T>(a, b, c))
+			{
+				v0 = &*it;
+				break;
+			}
 		}
 
-		*v1 = *(++it);
-		*v2 = *(++it);
+		v1 = &*(++it);
+		v2 = &*(++it);
 
 		v0->mark = true;
 		v1->mark = true;
@@ -284,9 +295,9 @@ namespace convex_hull
 	{
 		for( std::list<tVertex<T>>::iterator it = vertices.begin(); it != vertices.end(); )
 		{
-			if (!*it->mark)
+			if (!(*it).mark)
 			{
-				*it->mark = true;
+				(*it).mark = true;
 				AddOne<T>(*it, vertices, faces, edges);
 				CleanUp<T>(*(++it), vertices, faces, edges);
 			}
@@ -395,7 +406,7 @@ namespace convex_hull
 	{
 		CleanEdges<T>(edges);
 		CleanFaces<T>(faces);
-		CleanVertices<T>(vNext, vertices);
+		CleanVertices<T>(vNext, vertices, edges);
 	}
 
 	template <typename T>
@@ -419,7 +430,7 @@ namespace convex_hull
 
 		for (std::list<tEdge<T>>::iterator it = edges.begin(); it!= edges.end(); ++it)
 		{
-			if (*it->deleted)
+			if ((*it).deleted)
 			{
 				edges.erase(it);
 			}
@@ -431,7 +442,7 @@ namespace convex_hull
 	{
 		for (std::list<tFace<T>>::iterator it = faces.begin(); it != faces.end(); ++it)
 		{
-			if (*it->visible)
+			if ((*it).visible)
 			{
 				faces.erase(it);
 			}
@@ -448,13 +459,14 @@ namespace convex_hull
 
 		for (std::list<tVertex<T>>::iterator it = vertices.begin(); it != vertices.end(); ++it)
 		{
-			if (*it->mark && !*it->onhull)
+			if ((*it).mark && !(*it).onhull)
 			{
-				if (*it == vNext)
+				/*
+				if ((*it) == vNext)
 				{
-					*vNext = *(++it);
+					vNext = (*++it);
 					--it;
-				}
+				}*/
 				vertices.erase(it);
 			}
 		}
